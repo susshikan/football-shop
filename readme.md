@@ -27,7 +27,7 @@ https://muhammad-haikal42-vintagesports.pbp.cs.ui.ac.id
 #### 4. Membuat model pada aplikasi `main` dengan nama `Product` 
 -   membuat model baru dengan nama `Product` pada `main/models.py` dan tambahkan atribut yang sesuai
 
-#### 5. Membuat sebuah fungsi pada `views.py` untuk dikembalikan ke dalam sebuah *template* HTML yang menampilkan nama aplikasi serta nama dan kelas kamu.
+#### 5. Membuat sebuah fungsi pada `views.py` untuk dikembalikan ke dalam sebuah *template* HTML.
 
 -   Membuat fungsi `show_index` pada `main/views.py` 
 -   Lalu menambahkan atribut-atribut yang dibutuhkan
@@ -37,7 +37,7 @@ https://muhammad-haikal42-vintagesports.pbp.cs.ui.ac.id
 -   Membuat file `main/urls.py` dan tambahkan baris-baris di bawah ini:
     ```py
     urlpatterns = [
-        path('', views.show_main, name='show_main'),
+        path('', show_index, name='index'),
     ]
     ```
 #### 7. Melakukan *deployment* di PWS.
