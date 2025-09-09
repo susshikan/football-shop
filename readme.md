@@ -1,17 +1,19 @@
 # Vintage Sports
 
+## Link Deployment
+https://muhammad-haikal42-vintagesports.pbp.cs.ui.ac.id
 ## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)
 #### 1. Membuat proyek Django baru.
 
 -   Membuat *virtual environment* Python dengan perintah `python -m venv env`, dan mengaktifkannya dengan perintah `env\Scripts\activate`.
 -   Membuat file `requirements.txt` 
--   Buat project Django baru dengan perintah `django-admin start project vintage_sports .`.
+-   Buat project Django baru dengan perintah `django-admin start project vintage_sports .`
 
 #### 2. Membuat aplikasi *main* pada proyek tersebut.
 
 -   Menjalankan perintah `python manage.py startapp main`.
 -   Menambahkan `'main'` ke `INSTALLED_APPS` pada `vintage_sports/settings.py`.
-#### 3. Melakukan *routing* pada proyek agar dapat menjalankan aplikasi `main`.
+#### 3. Melakukan *routing* ke `main`
 -   Menambahkan *modules-modules* di bawah ini pada `vintage_sports/urls.py`
     ```py
     from django.urls import path, include
@@ -23,7 +25,7 @@
 
 
 #### 4. Membuat model pada aplikasi `main` dengan nama `Product` 
--   Buat model baru dengan nama `Product` pada `main/models.py` dan tambahkan atribut yang sesuai
+-   membuat model baru dengan nama `Product` pada `main/models.py` dan tambahkan atribut yang sesuai
 
 #### 5. Membuat sebuah fungsi pada `views.py` untuk dikembalikan ke dalam sebuah *template* HTML yang menampilkan nama aplikasi serta nama dan kelas kamu.
 
@@ -38,7 +40,7 @@
         path('', show_index, name='index'),
     ]
     ```
-#### Melakukan *deployment* ke PWS.
+#### 7. Melakukan *deployment* di PWS.
 
 -   Membuat projek baru
 -   Konfigurasi *environment variables* yang ada di `.env.prod`.
