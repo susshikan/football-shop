@@ -37,7 +37,7 @@ https://muhammad-haikal42-vintagesports.pbp.cs.ui.ac.id
 -   Membuat file `main/urls.py` dan tambahkan baris-baris di bawah ini:
     ```py
     urlpatterns = [
-        path('', show_index, name='index'),
+        path('', views.show_main, name='show_main'),
     ]
     ```
 #### 7. Melakukan *deployment* di PWS.
