@@ -221,4 +221,14 @@ urlpatterns = [
 ## Apakah ada feedback untuk asisten dosen tutorial 2 yang telah kamu kerjakan sebelumnya?
 Sejauh ini belum ada, para asdos sudah melakukan tugasnya dengan sangat baik
 
+## Hasil Postman
+- /json
+![json](assets/json.png)
+- /json/:id
+![jsonId](assets/jsonWithId.png)
+- /xml
+![xml](assets/xml.png)
+- /xml/:id
+![xmlId](assets/xmlWithId.png)
+
 </details>
