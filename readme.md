@@ -1,74 +1,21 @@
-# Vintage Sports
+# Vintage Sports (TUGAS 3 PBP)
 
 ## Link Deployment
 https://muhammad-haikal42-vintagesports.pbp.cs.ui.ac.id
-## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)
-#### 1. Membuat proyek Django baru.
+## Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
+Data delivery sangat penting dalam pengembangan sebuah platform karena hal ini merupakan mekanisme utama dalam pertukaran data antara client dan server, misalnya saat aplikasi web atau mobile membutuhkan data seperti data produk, berita, atau pesan dari server dan sebaliknya server menerima input dari pengguna seperti form, komentar, atau transaksi. Dengan adanya data delivery, komunikasi antar sistem dapat berlangsung secara konsisten dan efisien, serta memungkinkan interoperabilitas antara aplikasi yang dibangun dengan bahasa pemrograman berbeda karena data dikirim dengan format standar. Selain itu, data delivery juga memastikan keamanan karena memungkinkan adanya validasi, enkripsi, serta perlindungan terhadap serangan yang mungkin terjadi selama proses pertukaran data.
 
--   Membuat *virtual environment* Python dengan perintah `python -m venv env`, dan mengaktifkannya dengan perintah `env\Scripts\activate`.
--   Membuat file `requirements.txt` 
--   Buat project Django baru dengan perintah `django-admin start project vintage_sports .`
+## Menurutmu, mana yang lebih baik antara XML dan JSON? Mengapa JSON lebih populer dibandingkan XML?
+Menurut saya JSON lebih baik dibanding XML ini dikarenakan JSON (JavaScript Object Notation) jauh lebih sederhana, ringkas, mudah dibaca manusia, dan langsung dapat dipetakan ke struktur data di berbagai bahasa pemrograman modern. Lalu JSON lebih populer dibanding XML karena lebih hemat bandwidth, lebih cepat diproses dan sintaksnya lebih ringan sehingga JSON menjadi pilihan utama dalam hampir semua API modern.
 
-#### 2. Membuat aplikasi *main* pada proyek tersebut.
+## Jelaskan fungsi dari method is_valid() pada form Django dan mengapa kita membutuhkan method tersebut?
+Method is_valid() pada form Django berfungsi untuk melakukan validasi terhadap data yang diinput pengguna sebelum data tersebut digunakan atau disimpan ke dalam database. is_valid() sangat penting sebab dengan adanya is_valid(), developer bisa mencegah masuknya data yang salah atau berbahaya ke database sehingga menjaga integritas dan keamanan aplikasi.
 
--   Menjalankan perintah `python manage.py startapp main`.
--   Menambahkan `'main'` ke `INSTALLED_APPS` pada `vintage_sports/settings.py`.
-#### 3. Melakukan *routing* ke `main`
--   Menambahkan *modules-modules* di bawah ini pada `vintage_sports/urls.py`
-    ```py
-    from django.urls import path, include
-    ```
--   Menambahkan URL app `main`
-    ```py
-    path('', include('main.urls'))
-    ```
+## Mengapa kita membutuhkan csrf_token saat membuat form di Django? Apa yang dapat terjadi jika kita tidak menambahkan csrf_token pada form Django? Bagaimana hal tersebut dapat dimanfaatkan oleh penyerang?
+csrf_token pada form Django sangat penting untuk melindungi aplikasi dari serangan CSRF (Cross-Site Request Forgery), yaitu serangan di mana penyerang memanfaatkan sesi login aktif seorang pengguna untuk mengirim request palsu tanpa sepengetahuan korban. csrf_token sendiri berfungsi sebagai token unik yang harus dikirim bersama setiap request POST sehingga server dapat memastikan bahwa request tersebut benar-benar berasal dari form sah di aplikasi itu sendiri. Jika csrf_token tidak ditambahkan maka penyerang dapat dengan mudah membuat form tiruan untuk memaksa browser korban mengirim request.
+
+## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
 
 
-#### 4. Membuat model pada aplikasi `main` dengan nama `Product` 
--   membuat model baru dengan nama `Product` pada `main/models.py` dan tambahkan atribut yang sesuai
-
-#### 5. Membuat sebuah fungsi pada `views.py` untuk dikembalikan ke dalam sebuah *template* HTML.
-
--   Membuat fungsi `show_index` pada `main/views.py` 
--   Lalu menambahkan atribut-atribut yang dibutuhkan
-
-#### 6. Menambahkan routing pada `urls.py` aplikasi main untuk memetakan fungsi yang telah dibuat pada `views.py`.
-
--   Membuat file `main/urls.py` dan tambahkan baris-baris di bawah ini:
-    ```py
-    urlpatterns = [
-        path('', show_index, name='index'),
-    ]
-    ```
-#### 7. Melakukan *deployment* di PWS.
-
--   Membuat projek baru
--   Konfigurasi *environment variables* yang ada di `.env.prod`.
--   Push branch master ke pws
-
-## Buatlah bagan yang berisi request client ke web aplikasi berbasis Django beserta responnya dan jelaskan pada bagan tersebut kaitan antara urls.py, views.py, models.py, dan berkas html.
-![Bagan](assets/bagan.png)
-* **urls.py** berfungsi untuk memeriksa pola URL dan mengarahkan ke fungsi/class di views.py yang sesuai.
-
-* **views.py** berfungsi untuk menangani logika utama pada saat URL dipanggil. View menerima request, berinteraksi dengan models.py untuk mengambil/memanipulasi data (jika diperlukan), lalu mengembalikannya dalam bentuk JSON.
-* **models.py** berfungsi untuk mendefinisikan struktur data menggunakan ORM (Object-Relational Mapping) yang nantinya akan dihubungkan dengan database.
-* **Berkas HTML** nantinya akan digunakan untuk merender data yang diterima ke broser
-
-## Jelaskan peran settings.py dalam proyek Django!
-* Konfigurasi variabel Global seperti DEBUG, SECRET_KEY, ALLOWED_HOST. dll
-* Database setup dimana setting.py dapat menentukan jenis database apa yang akan dipakai dan menghubugnkannya dengan projek
-* Mengkonfigurasi middleware
-
-## Bagaimana cara kerja migrasi database di Django?
-Migrage database di Django dilakukan secara otomatis berdasarkan penerapan perubahan skema model ke datase
-+ Pertama2 lakukan perubahan terlebih dahulu pada models.py
-+ Jalankan perintah ``python manage.py makemigrations`` dimana fungsi dari perintah ini adalah untuk membuat django memerika perubahan model dari migrasi terakhir lalu mengenerate file di folder migrations
-+ Apply migrasi ke database menggunakan perintah ``python manage.py migrate``
-
-## Menurut Anda, dari semua framework yang ada, mengapa framework Django dijadikan permulaan pembelajaran pengembangan perangkat lunak?
-* Djago menggunakan bahasa python yang lebih mudah untuk dipelajari pemula dibanding bahasa lain
-* Framework Fullstack yang artinya django dapat mengurus frondend dan backend dalam 1 framework sehingga pemula cukup belajar 1 framework saja
-* Dokumentasi lengkap dan Komunitas yang besar
-
-## Apakah ada feedback untuk asisten dosen tutorial 1 yang telah kamu kerjakan sebelumnya?
+## Apakah ada feedback untuk asisten dosen tutorial 2 yang telah kamu kerjakan sebelumnya?
 Sejauh ini belum ada, para asdos sudah melakukan tugasnya dengan sangat baik
