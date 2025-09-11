@@ -1,12 +1,45 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>{{ app_name }}</h1>
-    <p>Nama: {{ name }}</p>
-    <p>Kelas: {{ class }}</p>
-</body>
-</html>
+ {% extends 'base.html' %}
+ {% block content %}
+<h1>{{ app_name }}</h1>
+
+<h5>NPM: </h5>
+<p>{{ npm }}</p>
+
+<h5>Name:</h5>
+<p>{{ name }}</p>
+
+<h5>Class:</h5>
+<p>{{ class }}</p>
+
+<a href="{% url 'main:create_product' %}">
+  <button>+ Add Product</button>
+</a>
+
+<hr>
+
+{% if not all_product %}
+<p>Belum ada data produk.</p>
+{% else %}
+
+{% for product in all_product %}
+<div>
+  <h2><a href="{% url 'main:show_product' product.id %}">{{ product.title }}</a></h2>
+
+  <p><b>{{ product.get_category_display }}</b>{% if product.is_featured %} | 
+    <b>Featured</b>{% endif %}
+
+  {% if product.thumbnail %}
+  <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
+  <br />
+  {% endif %}
+
+  
+
+  <p><a href="{% url 'main:show_product' product.id %}"><button>Check Product</button></a></p>
+</div>
+
+<hr>
+{% endfor %}
+
+{% endif %}
+ {% endblock content %}

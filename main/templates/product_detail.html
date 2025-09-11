@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<p><a href="{% url 'main:show_main' %}"><button>← Back to Product List</button></a></p>
+
+<h1>{{ product.title }}</h1>
+<p><b>{{ Product.get_category_display }}</b>{% if Product.is_featured %} | 
+    <b>Featured</b>
+{% endif %}
+
+{% if product.thumbnail %}
+<img src="{{ product.thumbnail }}" alt="News thumbnail" width="300">
+<br /><br />
+{% endif %}
+
+<h2>Price: {{product.price}}</h2>
+<p>{{ product.description }}</p>
+
+{% endblock content %}
