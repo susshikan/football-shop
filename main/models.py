@@ -19,7 +19,7 @@ class Product(models.Model):
         ('historical_matches', 'Historical Matches')
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     description = models.TextField()
