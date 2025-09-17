@@ -16,4 +16,10 @@
 <h2>Price: {{product.price}}</h2>
 <p>{{ product.description }}</p>
 
+{% if news.user %}
+    <p>Author: {{ news.user.username }}</p>
+{% else %}
+    <p>Author: Anonymous</p>
+{% endif %}
+
 {% endblock content %}

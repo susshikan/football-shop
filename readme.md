@@ -232,3 +232,21 @@ Sejauh ini belum ada, para asdos sudah melakukan tugasnya dengan sangat baik
 ![xmlId](assets/xmlWithId.png)
 
 </details>
+
+<details>
+    <summary><h2>Tugas Individu 4</h2></summary>
+
+## Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
+Merupakan form bawaan yang disediakan oleh django untuk menangani autentifikasi pengguna, kelebihannya mudah dipakai, aman karena terhubung ke sistem hashing password, dan langsung kompatibel dengan model User, sedangkan kekurangannya kurang fleksibel jika aplikasi butuh form login yang sangat kustom.
+
+## Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+Autentifikasi merupaakn suatu proses memastikan identitas pengguna(misalnya dalam login dengan menggunakna username dan password), sedangkan otorisasi menentukan hak akses pengguna setelah berhasil diautentikasi. Lalu Django mengimplementasikan autentifikasi dan otorisasi melalui **django.contrib.auth** dengan fitur login, register, dan validasi, sedangkankan otorisasi melalui fitur seperti permissions, groups, dan decorator
+
+## Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+
+
+## Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+
+## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
+
+</details>
