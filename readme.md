@@ -243,10 +243,92 @@ Merupakan form bawaan yang disediakan oleh django untuk menangani autentifikasi 
 Autentifikasi merupaakn suatu proses memastikan identitas pengguna(misalnya dalam login dengan menggunakna username dan password), sedangkan otorisasi menentukan hak akses pengguna setelah berhasil diautentikasi. Lalu Django mengimplementasikan autentifikasi dan otorisasi melalui **django.contrib.auth** dengan fitur login, register, dan validasi, sedangkankan otorisasi melalui fitur seperti permissions, groups, dan decorator
 
 ## Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+Session dan cookies sama-sama digunakan untuk menyimpan state di aplikasi web, namun memiliki kelebihan dan kekurangan masing-masing. Cookies disimpan di sisi klien, sehingga mudah diakses antar request tanpa beban server, tetapi lebih rentan terhadap manipulasi dan memiliki keterbatasan ukuran. Session disimpan di sisi server dan biasanya hanya menyimpan ID di browser (via cookie), sehingga lebih aman untuk data sensitif dan bisa menampung lebih banyak informasi, namun membebani server karena harus menyimpan data untuk setiap pengguna. Dengan kata lain, cookies lebih ringan tapi kurang aman, sedangkan session lebih aman dan fleksibel tetapi membutuhkan resource server lebih besar.
 
 
 ## Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+Cookies tidak otomatis aman karena rawan dicuri atau dimanipulasi lewat serangan seperti XSS dan session hijacking, sehingga perlu perlindungan ekstra seperti HttpOnly, Secure, dan SameSite. Django secara default sudah cukup aman karena hanya menyimpan session ID di cookie, sementara data sesungguhnya ada di server, serta menandatangani cookie agar tidak bisa diubah sembarangan. Selain itu, Django mengaktifkan SESSION_COOKIE_HTTPONLY = True secara default untuk mencegah akses dari JavaScript, dan developer dianjurkan menambahkan SESSION_COOKIE_SECURE = True serta konfigurasi SameSite untuk mencegah kebocoran data melalui HTTP atau cross-site request.
 
 ## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
+
+### 1. Mengimplemntasi fungsi login, register dan logout
+
+
+-   Implementasikan fungsi `register`, `login_user` dan `logout_user` pada `main/views.py`
+    ```py
+    def register(request):
+    form = UserCreationForm()
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Account successfully created!')
+            return redirect('main:login')
+    context = {'form': form}
+    return render(request, 'register.html', context)
+
+    def login_user(request):
+        if request.method == 'POST':
+            form = AuthenticationForm(data=request.POST)
+
+            if form.is_valid():
+                user = form.get_user()
+                login(request, user)
+                response = HttpResponseRedirect(reverse('main:index'))
+                return response
+        else:
+            form = AuthenticationForm(request)
+        context = {'form': form}
+        return render(request, 'login.html', context)
+
+    def logout_user(request):
+        logout(request)
+        response = HttpResponseRedirect(reverse('main:login'))
+        return response
+    ```
+
+-   Import decorator `login_requeired` dari `django.contrib.auth.decorators`
+    ```py
+    from django.contrib.auth.decorators import login_required
+    ```
+
+-   Menambah decorator `@login_required(login_url='/login')` pada page yg butuh login.
+
+-   Decorator `login_required` memastikan user untuk login terlebih dahulu untuk setiap fungsi-fungsi views tersebut.
+
+-   Jangan lupa untuk menambahkan template untuk login dan register.
+
+### 2. Menghubungkan model Product dengan User.
+
+-   Pada `main/models.py`, import class `User` dari `django.contrib.auth.models`
+    ```py
+    from django.contrib.auth.models import User
+    ```
+-   Menghubungkan user dengan product
+    ```py
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    ```
+    
+-   Lakukan migrate dengan `python manage.py makemigrations` dan `pyhton manage.py migrate`
+
+
+### 3. Menampilkan detail informasi pengguna yang sedang logged in seperti username dan menerapkan cookies seperti last_login pada halaman utama aplikasi.
+-   Pada `main/views.py`, menambahkan baris untuk set cookie
+    ```py
+    response.set_cookie('last_login', str(datetime.datetime.now()))
+    ```
+
+-   Tambahkan baris untuk menhapus cookie saat logout
+    ```py
+    response.delete_cookie('last_login')
+    ```
+    
+-   Menambahkan informasi tentang sesi terakhir login di `main/templates/main.html`:
+    ```html
+    <div class="pill">
+        <span> Last login session: {{ last_login }}</span>
+    </div>
+    ```
 
 </details>
