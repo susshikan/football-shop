@@ -1,25 +1,61 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+  <title>{{ product.name }} — Vintage Sports</title>
+{% endblock meta %}
+
 {% block content %}
-<p><a href="{% url 'main:show_main' %}"><button>← Back to Product List</button></a></p>
+  <a href="{% url 'main:show_main' %}" class="inline-flex items-center text-sm text-neutral-600 hover:text-ink">← Kembali ke daftar</a>
 
-<h1>{{ product.title }}</h1>
-<p><b>{{ Product.get_category_display }}</b>{% if Product.is_featured %} | 
-    <b>Featured</b>
-{% endif %}
+  <section class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft">
+      <div class="relative aspect-[4/3] bg-neutral-100">
+        {% if product.thumbnail %}
+          <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="h-full w-full object-cover" />
+        {% else %}
+          <img src="{% static 'image/no-news.png' %}" alt="no thumbnail" class="h-full w-full object-contain p-6" />
+        {% endif %}
+        {% if product.is_featured %}
+          <span class="absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1">Featured</span>
+        {% endif %}
+      </div>
+    </div>
 
-{% if product.thumbnail %}
-<img src="{{ product.thumbnail }}" alt="News thumbnail" width="300">
-<br /><br />
-{% endif %}
+    <div>
+      <div class="flex items-center gap-2 text-xs text-neutral-500">
+        <span class="uppercase tracking-wide">{{ product.get_category_display }}</span>
+        <span class="select-none">•</span>
+        <span>{{ product.get_history_value_display }}</span>
+        {% if product.season %}<span class="select-none">•</span><span>{{ product.season }}</span>{% endif %}
+      </div>
+      <h1 class="mt-2 font-display text-3xl text-ink">{{ product.name }}</h1>
+      <div class="mt-2 text-2xl font-semibold text-ink">Rp {{ product.price }}</div>
 
-<h1>{{product.name}}</h1>
-<h2>Price: {{product.price}}</h2>
-<p>{{ product.description }}</p>
+      <div class="mt-4 prose prose-sm max-w-none text-neutral-700">
+        <p>{{ product.description }}</p>
+      </div>
 
-{% if news.user %}
-    <p>Author: {{ news.user.username }}</p>
-{% else %}
-    <p>Author: Anonymous</p>
-{% endif %}
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+        <div class="rounded-lg border border-neutral-200/60 bg-white px-4 py-3">100% Authenticity Guarantee</div>
+    
+      </div>
 
+      <div class="mt-6 flex items-center gap-2 text-sm text-neutral-600">
+        {% if product.user %}
+          <span>Penjual:</span> <span class="font-medium text-ink">{{ product.user.username }}</span>
+        {% else %}
+          <span>Penjual:</span> <span class="font-medium text-ink">Anonim</span>
+        {% endif %}
+      </div>
+
+      {% if user.is_authenticated and product.user == user %}
+      <div class="mt-6 flex items-center gap-3">
+        <a href="{% url 'main:edit_product' product.pk %}" class="inline-flex items-center rounded-md border border-neutral-300 px-4 py-2 text-sm text-ink hover:border-gold hover:text-gold transition">Edit</a>
+        <a href="{% url 'main:delete_product' product.pk %}" class="inline-flex items-center rounded-md border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">Delete</a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
 {% endblock content %}
+

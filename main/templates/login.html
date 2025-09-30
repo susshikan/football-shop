@@ -1,32 +1,53 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Login</title>
+  <title>Login — Vintage Sports</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="login">
-  <h1>Login</h1>
+<section class="max-w-md mx-auto">
+  <h1 class="font-display text-2xl text-center">Masuk</h1>
+  <p class="mt-1 text-neutral-600 text-center">Selamat datang kembali.</p>
 
-  <form method="POST" action="">
-    {% csrf_token %}
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td><input class="btn login_btn" type="submit" value="Login" /></td>
-      </tr>
-    </table>
-  </form>
+  <div class="mt-6 card p-6">
+    <form method="POST" action="" class="space-y-5">
+      {% csrf_token %}
 
-  {% if messages %}
-  <ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %} Don't have an account yet?
-  <a href="{% url 'main:register' %}">Register Now</a>
-</div>
+      {% if form.non_field_errors %}
+        <ul class="errorlist">{{ form.non_field_errors }}</ul>
+      {% endif %}
+
+      <div class="space-y-1">
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+
+      <div>
+        <input class="btn-primary w-full" type="submit" value="Login" />
+      </div>
+    </form>
+
+    {% if messages %}
+    <ul class="mt-4 text-sm text-red-600 space-y-1">
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="mt-4 text-sm text-neutral-600 text-center">
+      Belum punya akun?
+      <a class="text-ink font-medium hover:text-gold" href="{% url 'main:register' %}">Daftar sekarang</a>
+    </div>
+  </div>
+</section>
 
 {% endblock content %}
+

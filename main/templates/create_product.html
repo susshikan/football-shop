@@ -1,18 +1,67 @@
 {% extends 'base.html' %} 
+
+{% block meta %}
+  <title>Tambah Produk — Vintage Sports</title>
+{% endblock meta %}
+
 {% block content %}
-<h1>Add Product</h1>
+<section class="max-w-3xl mx-auto">
+  <h1 class="font-display text-2xl">Tambah Produk</h1>
+  <p class="mt-1 text-neutral-600">Lengkapi detail berikut untuk menambahkan merchandise vintage Anda.</p>
 
-<form method="POST">
-  {% csrf_token %}
-  <table>
-    {{ form.as_table }}
-    <tr>
-      <td></td>
-      <td>
-        <input type="submit" value="Add NEWS" />
-      </td>
-    </tr>
-  </table>
-</form>
+  <div class="mt-6 card p-6">
+    <form method="POST" class="space-y-5">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <ul class="errorlist">{{ form.non_field_errors }}</ul>
+      {% endif %}
 
+      <div class="space-y-1">
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+        {{ form.price }}
+        {{ form.price.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.thumbnail.id_for_label }}">{{ form.thumbnail.label }}</label>
+        {{ form.thumbnail }}
+        {{ form.thumbnail.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+        {{ form.category }}
+        {{ form.category.errors }}
+      </div>
+
+      <div class="space-y-1">
+        <label for="{{ form.history_value.id_for_label }}">{{ form.history_value.label }}</label>
+        {{ form.history_value }}
+        {{ form.history_value.errors }}
+      </div>
+
+      <div class="flex items-center gap-2">
+        {{ form.is_featured }}
+        <label for="{{ form.is_featured.id_for_label }}" class="m-0">{{ form.is_featured.label }}</label>
+        {{ form.is_featured.errors }}
+      </div>
+
+      <div>
+        <input class="btn-primary" type="submit" value="Tambah Produk" />
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}

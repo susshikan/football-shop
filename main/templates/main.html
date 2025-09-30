@@ -1,72 +1,75 @@
- {% extends 'base.html' %}
- {% block content %}
- {% include 'navbar.html' %}
-<h1>{{ app_name }}</h1>
+{% extends 'base.html' %}
+{% load static %}
 
-<h5>NPM: </h5>
-<p>{{ npm }}</p>
+{% block meta %}
+  <title>Vintage Sports — Beranda</title>
+{% endblock meta %}
 
-<h5>Name:</h5>
-<p>{{ name }}</p>
+{% block content %}
+  <section class="relative overflow-hidden rounded-xl bg-white shadow-soft border border-neutral-200/60">
+    <div class="px-6 py-10 sm:px-10">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-display tracking-tight">Temukan Heritage Sepakbola Disini</h1>
+          <p class="mt-2 text-neutral-600 max-w-2xl"></p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="?filter=all" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Semua Produk</a>
+          <a href="?filter=my" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Produk Saya</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'main:create_product' %}" class="inline-flex items-center rounded-full bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">+ Tambah Produk</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-4 text-xs text-neutral-500">Sesi terakhir login: {{ last_login }}</div>
+    </div>
+  </section>
 
-<h5>Class:</h5>
-<p>{{ class }}</p>
-
-<a href="{% url 'main:create_product' %}">
-  <button>+ Add Product</button>
-</a>
-<a href="{% url 'main:logout' %}">
-  <button>Logout</button>
-</a>
-
-<h5>Sesi terakhir login: {{ last_login }}</h5>
-
-<hr>
-
-<a href="?filter=all">
-    <button type="button">All Products</button>
-</a>
-<a href="?filter=my">
-    <button type="button">My Products</button>
-</a> 
-
-{% if not all_product %}
-<p>Belum ada data produk.</p>
-{% else %}
-
-{% for product in all_product %}
-<div>
-  <h2><a href="{% url 'main:show_product' product.id %}">{{ product.title }}</a></h2>
-
-  <p><b>{{ product.get_category_display }}</b>{% if product.is_featured %} | 
-    <b>Featured</b>{% endif %}
-
-  {% if product.thumbnail %}
-  <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
-  <br />
+  {% if not all_product %}
+    <div class="mt-10 text-center text-neutral-600">
+      <img class="mx-auto h-24 w-24 opacity-70" src="{% static 'image/no-news.png' %}" alt="no products" />
+      <p class="mt-4">Belum ada produk yang ditambahkan.</p>
+      {% if user.is_authenticated %}
+      <a href="{% url 'main:create_product' %}" class="inline-flex items-center mt-4 rounded-md bg-ink text-white px-4 py-2 text-sm hover:bg-gold transition">Tambah Produk Pertama</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <section class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for product in all_product %}
+        <article class="group relative overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft hover:shadow-lg transition">
+          <a href="{% url 'main:show_product' product.id %}" class="block">
+            <div class="relative aspect-[4/3] bg-neutral-100">
+              {% if product.thumbnail %}
+                <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              {% else %}
+                <img src="{% static 'image/no-news.png' %}" alt="no thumbnail" class="h-full w-full object-contain p-6" />
+              {% endif %}
+              {% if product.is_featured %}
+                <span class="absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1">Featured</span>
+              {% endif %}
+            </div>
+            <div class="p-4">
+              <div class="flex items-center gap-2 text-xs text-neutral-500">
+                <span class="uppercase tracking-wide">{{ product.get_category_display }}</span>
+                <span class="select-none">•</span>
+                <span>{{ product.get_history_value_display }}</span>
+                {% if product.season %}<span class="select-none">•</span><span>{{ product.season }}</span>{% endif %}
+              </div>
+              <h3 class="mt-2 font-display text-lg text-ink">{{ product.name }}</h3>
+              <div class="mt-1 flex items-baseline justify-between">
+                <span class="text-sm text-neutral-600 line-clamp-2">{{ product.description }}</span>
+                <span class="ml-3 text-ink font-semibold">Rp {{ product.price }}</span>
+              </div>
+            </div>
+          </a>
+          {% if user.is_authenticated and product.user == user %}
+          <div class="px-4 pb-4 flex items-center gap-2">
+            <a href="{% url 'main:edit_product' product.pk %}" class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Edit</a>
+            <a href="{% url 'main:delete_product' product.pk %}" class="inline-flex items-center rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition">Delete</a>
+          </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </section>
   {% endif %}
-
-
-<p>
-    <a href="{% url 'main:show_product' product.id %}"><button>Check product detail</button></a>
-    {% if user.is_authenticated and product.user == user %}
-    <a href="{% url 'main:edit_product' product.pk %}">
-        <button>
-            Edit
-        </button>
-    </a>
-    <a href="{% url 'main:delete_product' product.pk %}">
-      <button>
-          Delete
-      </button>
-  </a>
-
-    {% endif %}
-</p>
-</div>
-
-<hr>
-{% endfor %}
-
-{% endif %}
- {% endblock content %}
+{% endblock content %}
