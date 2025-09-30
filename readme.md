@@ -332,3 +332,75 @@ Cookies tidak otomatis aman karena rawan dicuri atau dimanipulasi lewat serangan
     ```
 
 </details>
+
+<details>
+    <summary><h2>Tugas Individu 5</h2></summary>
+
+## Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+Jika terdapat beberapa CSS selector yang berlaku pada elemen HTML yang sama, maka browser akan menentukan gaya mana yang dipakai berdasarkan specificity (tingkat kekhususan) dan urutan deklarasi. Prioritasnya dimulai dari inline style (paling tinggi), kemudian selector dengan ID, lalu class/atribut/pseudo-class, dan terakhir selector elemen/tag/pseudo-element. Jika dua aturan memiliki tingkat specificity yang sama, maka aturan yang dideklarasikan terakhir di file CSS akan digunakan. Selain itu, aturan dengan !important akan mengesampingkan semua aturan lain, kecuali jika ada beberapa !important dengan specificity berbeda, maka kembali ke urutan prioritas specificity.
+
+## Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+Responsive design menjadi konsep penting dalam pengembangan aplikasi web karena pengguna saat ini mengakses internet melalui berbagai perangkat dengan ukuran layar yang berbeda—mulai dari smartphone, tablet, laptop, hingga monitor besar. Dengan responsive design, tampilan dan elemen web secara otomatis menyesuaikan ukuran layar sehingga tetap nyaman digunakan, mudah dibaca, dan tidak membuat pengguna harus melakukan zoom atau scroll berlebihan. Misalnya, Twitter dan Tokopedia sudah menerapkan responsive design dengan baik: di smartphone menu navigasi otomatis berubah menjadi ikon sederhana (hamburger menu), konten menyesuaikan lebar layar, dan elemen grid berpindah posisi agar tetap rapi. Sebaliknya, beberapa website lama instansi pemerintahan sering belum responsive: ketika dibuka di ponsel, teks terlalu kecil, tabel melebar keluar layar, dan tombol sulit ditekan. Hal ini membuat pengalaman pengguna buruk dan dapat menurunkan engagement, sehingga responsive design bukan hanya estetika, tetapi juga kebutuhan fungsional untuk memastikan aksesibilitas dan kenyamanan di semua perangkat.
+
+## Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+- Margin : adalah jarak di luar border elemen, yaitu ruang antara elemen dengan elemen lainnya
+    ```css
+    div {
+    margin: 20px; 
+    }=
+    ```
+- Border : adalah garis di antara margin dan padding, yang mengelilingi konten elemen
+    ```css
+    div {
+    border: 2px solid black; 
+    }
+    ```
+- Padding : adalah jarak di dalam border, yaitu ruang antara konten elemen (teks/gambar) dengan border
+    ```css
+    div {
+    padding: 15px; 
+    }
+    ```
+## Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+- **Flexbox** adalah sistem layout CSS satu dimensi yang berfungsi untuk mengatur elemen secara fleksibel dalam satu arah, baik horizontal (row) maupun vertikal (column). Dengan flexbox, developer dapat dengan mudah mengatur posisi, perataan, dan jarak antar elemen tanpa perlu menggunakan banyak perhitungan manual, sehingga sangat efektif digunakan untuk membuat komponen seperti navbar, daftar tombol, card produk, atau form agar tetap rapi dan responsif di berbagai ukuran layar.
+- **Grid** Layout adalah sistem layout CSS dua dimensi yang memungkinkan pengaturan elemen dalam bentuk baris (rows) dan kolom (columns) sekaligus, sehingga memberikan kontrol penuh untuk membagi area halaman menjadi struktur yang kompleks. Grid sangat berguna untuk membangun layout halaman secara keseluruhan, seperti header, sidebar, konten utama, dan footer, atau galeri gambar yang tersusun rapi, karena dapat mendefinisikan ukuran, jarak, dan proporsi elemen dengan lebih terstruktur dan konsisten.
+## Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+
+### 1. Menambahkan fitur edit product
+```python
+def edit_product(request, id):
+    product = get_object_or_404(News, pk=id)
+    form = ProductForm(request.POST or None, instance=news)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+```
+
+### 2. Menambahkan fitur hapus product
+```python
+def delete_product(request, id):
+    product = get_object_or_404(News, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
+```
+
+### 3. Melakukan styling pada html
+- Pertama menyambungkan tailwind melalu script CDN pada base.html
+    ```html
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    ```
+- Update middleware agar dapat serve static file
+    ```python
+    MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    ]
+    ```
+- Melakukan styling pada seluruh template html
+</details>
