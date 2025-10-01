@@ -5,7 +5,8 @@
       <span class="hidden sm:inline text-[11px] uppercase tracking-widest text-gold group-hover:text-burgundy transition">Authentic Football Heritage</span>
     </a>
 
-    <div class="flex items-center gap-6">
+    <div class="flex items-center gap-3 md:gap-6">
+      <!-- Desktop navigation links -->
       <div class="hidden md:flex items-center gap-6 text-sm">
         <a href="/" class="text-neutral-700 hover:text-ink">Home</a>
         {% if user.is_authenticated %}
@@ -14,7 +15,8 @@
         {% endif %}
       </div>
 
-      <div class="flex items-center gap-3">
+      <!-- Desktop auth actions -->
+      <div class="hidden md:flex items-center gap-3">
         {% if user.is_authenticated %}
           <div class="hidden sm:flex flex-col items-end leading-tight">
             <span class="text-sm text-ink">Hi, {{ user.username }}</span>
@@ -29,6 +31,58 @@
              class="inline-flex items-center rounded-md bg-ink text-white px-3 py-1.5 text-sm hover:bg-gold transition">Register</a>
         {% endif %}
       </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden flex items-center">
+        <button class="mobile-menu-button p-2 text-neutral-600 hover:text-ink transition-colors" aria-label="Open menu">
+          <span class="sr-only">Open menu</span>
+          <div class="w-6 h-6 flex flex-col justify-center items-center">
+            <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+            <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5"></span>
+            <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu hidden md:hidden bg-white border-t border-neutral-200/60">
+    <div class="px-6 py-4 space-y-4">
+      <!-- Mobile Navigation Links -->
+      <div class="space-y-1">
+        <a href="/" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Home</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'main:create_product' %}" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Add Product</a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile User Section -->
+      <div class="border-t border-neutral-200/60 pt-4">
+        {% if user.is_authenticated %}
+          <div class="mb-4">
+            <div class="font-medium text-ink">{{ user.username }}</div>
+            <div class="text-sm text-neutral-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
+          </div>
+          <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">Logout</a>
+        {% else %}
+          <div class="space-y-3">
+            <a href="{% url 'main:login' %}" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Login</a>
+            <a href="{% url 'main:register' %}" class="block bg-ink hover:bg-gold text-white font-medium py-3 px-4 rounded text-center transition-colors">Register</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const btn = document.querySelector('button.mobile-menu-button');
+      const menu = document.querySelector('.mobile-menu');
+      if (!btn || !menu) return;
+      btn.addEventListener('click', function () {
+        menu.classList.toggle('hidden');
+      });
+    })();
+  </script>
 </nav>
