@@ -7,69 +7,360 @@
 
 {% block content %}
   <section class="relative overflow-hidden rounded-xl bg-white shadow-soft border border-neutral-200/60">
-    <div class="px-6 py-10 sm:px-10">
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <div class="px-6 py-6 sm:px-10">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 class="text-3xl sm:text-4xl font-display tracking-tight">Temukan Heritage Sepakbola Disini</h1>
-          <p class="mt-2 text-neutral-600 max-w-2xl"></p>
+          <h1 class="text-2xl sm:text-3xl font-display tracking-tight">Temukan Heritage Sepakbola Disini</h1>
+          <div class="mt-1 text-xs text-neutral-500">Sesi terakhir login: {{ last_login }}</div>
         </div>
-        <div class="flex items-center gap-3">
-          <a href="?filter=all" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Semua Produk</a>
-          <a href="?filter=my" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Produk Saya</a>
+        <div class="flex items-center gap-2 md:gap-3">
+          <button id="filter-all" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Semua Produk</button>
+          <button id="filter-my" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Produk Saya</button>
           {% if user.is_authenticated %}
-            <a href="{% url 'main:create_product' %}" class="inline-flex items-center rounded-full bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">+ Tambah Produk</a>
+          <button id="open-create-modal" class="inline-flex items-center rounded-full bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">+ Tambah (AJAX)</button>
           {% endif %}
+          <button id="refresh-button" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Refresh</button>
         </div>
       </div>
-      <div class="mt-4 text-xs text-neutral-500">Sesi terakhir login: {{ last_login }}</div>
     </div>
   </section>
 
-  {% if not all_product %}
-    <div class="mt-10 text-center text-neutral-600">
-      <img class="mx-auto h-24 w-24 opacity-70" src="{% static 'image/no-news.png' %}" alt="no products" />
-      <p class="mt-4">Belum ada produk yang ditambahkan.</p>
-      {% if user.is_authenticated %}
-      <a href="{% url 'main:create_product' %}" class="inline-flex items-center mt-4 rounded-md bg-ink text-white px-4 py-2 text-sm hover:bg-gold transition">Tambah Produk Pertama</a>
-      {% endif %}
+  <div id="loading" class="bg-white rounded-lg border border-neutral-200/60 p-12 text-center mt-6 hidden">
+    <svg class="animate-spin h-8 w-8 text-ink inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-neutral-600 mt-3">Memuat produk...</p>
+  </div>
+
+  <div id="error" class="bg-white rounded-lg border border-burgundy/40 p-6 text-burgundy mt-6 hidden">Terjadi kesalahan. Coba lagi.</div>
+
+  <div id="grid" class="hidden mt-6"></div>
+
+  <div id="empty" class="bg-white rounded-lg border border-neutral-200/60 p-12 text-center mt-6 hidden">
+    <div class="w-24 h-24 mx-auto mb-4">
+      <img src="{% static 'image/no-news.png' %}" alt="No products" class="w-full h-full object-contain">
     </div>
-  {% else %}
-    <section class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for product in all_product %}
-        <article class="group relative overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft hover:shadow-lg transition">
-          <a href="{% url 'main:show_product' product.id %}" class="block">
-            <div class="relative aspect-[4/3] bg-neutral-100">
-              {% if product.thumbnail %}
-                <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-              {% else %}
-                <img src="{% static 'image/no-news.png' %}" alt="no thumbnail" class="h-full w-full object-contain p-6" />
-              {% endif %}
-              {% if product.is_featured %}
-                <span class="absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1">Featured</span>
-              {% endif %}
+    <h3 class="text-lg font-medium text-ink mb-2">Belum ada produk</h3>
+    <p class="text-neutral-500 mb-6">Mulai tambahkan koleksi vintage Anda.</p>
+    {% if user.is_authenticated %}
+    <button id="empty-open-create" class="inline-flex items-center px-4 py-2 bg-ink text-white rounded-md hover:bg-gold transition-colors">Tambah Produk</button>
+    {% endif %}
+  </div>
+
+  {% if user.is_authenticated %}
+  <!-- Create Modal -->
+  <div id="modal-create" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="absolute inset-0 flex items-center justify-center px-4">
+      <div class="w-full max-w-lg bg-white rounded-xl border border-neutral-200/60 shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-neutral-200/60 flex items-center justify-between">
+          <h3 class="font-semibold text-ink">Tambah Produk</h3>
+          <button id="close-create" class="p-1 text-neutral-400 hover:text-ink">✕</button>
+        </div>
+        <div class="p-5">
+          <form id="create-form" class="space-y-4">
+            <div>
+              <label class="font-medium text-sm">Nama</label>
+              <input name="name" type="text" class="w-full" required />
             </div>
-            <div class="p-4">
-              <div class="flex items-center gap-2 text-xs text-neutral-500">
-                <span class="uppercase tracking-wide">{{ product.get_category_display }}</span>
-                <span class="select-none">•</span>
-                <span>{{ product.get_history_value_display }}</span>
-                {% if product.season %}<span class="select-none">•</span><span>{{ product.season }}</span>{% endif %}
-              </div>
-              <h3 class="mt-2 font-display text-lg text-ink">{{ product.name }}</h3>
-              <div class="mt-1 flex items-baseline justify-between">
-                <span class="text-sm text-neutral-600 line-clamp-2">{{ product.description }}</span>
-                <span class="ml-3 text-ink font-semibold">Rp {{ product.price }}</span>
-              </div>
+            <div>
+              <label class="font-medium text-sm">Harga</label>
+              <input name="price" type="number" class="w-full" required />
             </div>
-          </a>
-          {% if user.is_authenticated and product.user == user %}
-          <div class="px-4 pb-4 flex items-center gap-2">
-            <a href="{% url 'main:edit_product' product.pk %}" class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Edit</a>
-            <a href="{% url 'main:delete_product' product.pk %}" class="inline-flex items-center rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition">Delete</a>
-          </div>
-          {% endif %}
-        </article>
-      {% endfor %}
-    </section>
+            <div>
+              <label class="font-medium text-sm">Deskripsi</label>
+              <textarea name="description" rows="3" class="w-full" required></textarea>
+            </div>
+            <div>
+              <label class="font-medium text-sm">Thumbnail URL</label>
+              <input name="thumbnail" type="url" class="w-full" required />
+            </div>
+            <div>
+              <label class="font-medium text-sm">Kategori</label>
+              <select name="category" class="w-full">
+                <option value="match_worn_vintage">Match Worn Vintage</option>
+                <option value="player_issue_vintage">Player Issue Vintage</option>
+                <option value="replica_vintage">Replica Vintage</option>
+                <option value="reissue_retro">Reissue Retro</option>
+                <option value="special_edition_vintage">Special Edition Vintage</option>
+                <option value="analysis">Analysis</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-medium text-sm">Nilai Historis</label>
+              <select name="history_value" class="w-full">
+                <option value="classic">Classic</option>
+                <option value="signed_vintage">Signed Vintage</option>
+                <option value="limited_edition">Limited Edition</option>
+                <option value="historical_matches">Historical Matches</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="is_featured" name="is_featured" type="checkbox" />
+              <label for="is_featured" class="text-sm">Featured</label>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button type="button" id="cancel-create" class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Batal</button>
+              <button type="submit" class="inline-flex items-center rounded-md bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
   {% endif %}
+
+  <!-- Delete Confirm Modal -->
+  <div id="modal-delete" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="absolute inset-0 flex items-center justify-center px-4">
+      <div class="w-full max-w-md bg-white rounded-xl border border-neutral-200/60 shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-neutral-200/60 flex items-center justify-between">
+          <h3 class="font-semibold text-ink">Hapus Produk</h3>
+          <button id="close-delete" class="p-1 text-neutral-400 hover:text-ink">✕</button>
+        </div>
+        <div class="p-5">
+          <p class="text-neutral-700">Yakin ingin menghapus <span id="delete-name" class="font-medium text-ink"></span>?</p>
+          <div class="flex items-center justify-end gap-2 mt-5">
+            <button id="cancel-delete" class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Batal</button>
+            <button id="confirm-delete" class="inline-flex items-center rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition">Hapus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PRODUCTS_API_ENDPOINT = "{% url 'main:show_json' %}";
+    const CREATE_ENDPOINT = "{% url 'main:create_product_ajax' %}";
+    const UPDATE_ENDPOINT_TMPL = "{% url 'main:update_product_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    const DELETE_ENDPOINT_TMPL = "{% url 'main:delete_product_ajax' '00000000-0000-0000-0000-000000000000' %}";
+    const DETAIL_LINK_TMPL = "{% url 'main:show_product' '00000000-0000-0000-0000-000000000000' %}";
+    const EDIT_LINK_TMPL = "{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}";
+    const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+
+    const loadingEl = document.getElementById('loading');
+    const errorEl = document.getElementById('error');
+    const emptyEl = document.getElementById('empty');
+    const gridEl = document.getElementById('grid');
+    const filterAllBtn = document.getElementById('filter-all');
+    const filterMyBtn = document.getElementById('filter-my');
+    const refreshBtn = document.getElementById('refresh-button');
+    const openCreateBtn = document.getElementById('open-create-modal');
+    const emptyOpenCreateBtn = document.getElementById('empty-open-create');
+
+    const modalCreate = document.getElementById('modal-create');
+    const closeCreate = document.getElementById('close-create');
+    const cancelCreate = document.getElementById('cancel-create');
+    const createForm = document.getElementById('create-form');
+
+    const modalDelete = document.getElementById('modal-delete');
+    const closeDelete = document.getElementById('close-delete');
+    const cancelDelete = document.getElementById('cancel-delete');
+    const confirmDelete = document.getElementById('confirm-delete');
+    const deleteName = document.getElementById('delete-name');
+
+    let allProducts = [];
+    let activeFilter = 'all';
+    let deleteTarget = null; // { id, name }
+
+    function getCSRFToken() {
+      const name = 'csrftoken=';
+      const cookies = document.cookie ? document.cookie.split(';') : [];
+      for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name)) return decodeURIComponent(c.substring(name.length));
+      }
+      return '';
+    }
+
+    function displaySections({ loading=false, error=false, empty=false, grid=false }){
+      loadingEl.classList.toggle('hidden', !loading);
+      errorEl.classList.toggle('hidden', !error);
+      emptyEl.classList.toggle('hidden', !empty);
+      gridEl.classList.toggle('hidden', !grid);
+      if (grid) gridEl.className = 'mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+    }
+
+    function updateFilterButtons() {
+      if (!filterAllBtn || !filterMyBtn) return;
+      if (activeFilter === 'all') {
+        filterAllBtn.className = 'inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-white bg-ink hover:bg-gold hover:border-gold transition';
+        filterMyBtn.className = 'inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition';
+      } else {
+        filterMyBtn.className = 'inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-white bg-ink hover:bg-gold hover:border-gold transition';
+        filterAllBtn.className = 'inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition';
+      }
+    }
+
+    function buildCard(item) {
+      const article = document.createElement('article');
+      article.className = 'group relative overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft hover:shadow-lg transition flex flex-col';
+
+      const linkDetail = DETAIL_LINK_TMPL.replace('00000000-0000-0000-0000-000000000000', item.id);
+      const linkEdit = EDIT_LINK_TMPL.replace('00000000-0000-0000-0000-000000000000', item.id);
+
+      const thumbWrap = document.createElement('div');
+      thumbWrap.className = 'relative aspect-[4/3] bg-neutral-100 overflow-hidden';
+      if (item.thumbnail) {
+        const img = document.createElement('img');
+        img.src = item.thumbnail
+        img.alt = item.name
+        img.className = 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]';
+        thumbWrap.appendChild(img);
+      } else {
+        const img = document.createElement('img');
+        img.src = '{% static 'image/no-news.png' %}';
+        img.alt = 'no thumbnail';
+        img.className = 'h-full w-full object-contain p-6';
+        thumbWrap.appendChild(img);
+      }
+      if (item.is_featured) {
+        const badge = document.createElement('span');
+        badge.className = 'absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1';
+        badge.textContent = 'Featured';
+        thumbWrap.appendChild(badge);
+      }
+
+      const content = document.createElement('div');
+      content.className = 'p-4 flex-1';
+      const meta = document.createElement('div');
+      meta.className = 'flex items-center gap-2 text-xs text-neutral-500';
+      meta.innerHTML = `<span class="uppercase tracking-wide">${item.category}</span>` + (item.history_value ? ` <span class="select-none">•</span> <span>${item.history_value}</span>` : '');
+      const title = document.createElement('h3');
+      title.className = 'mt-2 font-display text-lg text-ink';
+      title.textContent = item.name;
+      const descPrice = document.createElement('div');
+      descPrice.className = 'mt-1 flex items-baseline justify-between';
+      const desc = document.createElement('span');
+      desc.className = 'text-sm text-neutral-600 line-clamp-2';
+      desc.textContent = item.description;
+      const price = document.createElement('span');
+      price.className = 'ml-3 text-ink font-semibold';
+      price.textContent = `Rp ${item.price}`;
+      descPrice.appendChild(desc);
+      descPrice.appendChild(price);
+      content.appendChild(meta);
+      content.appendChild(title);
+      content.appendChild(descPrice);
+
+      const link = document.createElement('a');
+      link.href = linkDetail;
+      link.className = 'block';
+      link.appendChild(thumbWrap);
+      link.appendChild(content);
+      article.appendChild(link);
+
+      if (CURRENT_USER_ID && String(item.user_id) === String(CURRENT_USER_ID)) {
+        const actions = document.createElement('div');
+        actions.className = 'px-4 pb-4 flex items-center gap-2';
+        const editA = document.createElement('a');
+        editA.href = linkEdit;
+        editA.className = 'inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition';
+        editA.textContent = 'Edit';
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'inline-flex items-center rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition';
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', () => openDeleteModal(item.id, item.name));
+        actions.appendChild(editA);
+        actions.appendChild(delBtn);
+        article.appendChild(actions);
+      }
+      return article;
+    }
+
+    function renderGrid(items) {
+      gridEl.innerHTML = '';
+      items.forEach(it => gridEl.appendChild(buildCard(it)));
+    }
+
+    function filterAndDisplay() {
+      updateFilterButtons();
+      let filtered = activeFilter === 'all' ? allProducts : allProducts.filter(p => String(p.user_id) === String(CURRENT_USER_ID));
+      if (!filtered.length) {
+        displaySections({ empty: true });
+      } else {
+        renderGrid(filtered);
+        displaySections({ grid: true });
+      }
+    }
+
+    async function fetchProducts() {
+      try {
+        displaySections({ loading: true });
+        const res = await fetch(PRODUCTS_API_ENDPOINT, { headers: { 'Accept': 'application/json' }});
+        if (!res.ok) throw new Error('Failed');
+        const raw = await res.json();
+        // Convert Django serializer output
+        allProducts = (raw || []).map(obj => ({ id: obj.pk, user_id: obj.fields.user, name: obj.fields.name, price: obj.fields.price, description: obj.fields.description, thumbnail: obj.fields.thumbnail, category: obj.fields.category, history_value: obj.fields.history_value, is_featured: obj.fields.is_featured }));
+        // Map code to labels (rough map for display)
+        const catMap = { 'match_worn_vintage':'Match Worn Vintage','player_issue_vintage':'Player Issue Vintage','replica_vintage':'Replica Vintage','reissue_retro':'Reissue Retro','special_edition_vintage':'Special Edition Vintage','analysis':'Analysis' };
+        const histMap = { 'classic':'Classic','signed_vintage':'Signed Vintage','limited_edition':'Limited Edition','historical_matches':'Historical Matches' };
+        allProducts = allProducts.map(p => ({...p, category: catMap[p.category] || p.category, history_value: histMap[p.history_value] || p.history_value }));
+        filterAndDisplay();
+      } catch (e) {
+        console.error(e);
+        displaySections({ error: true });
+      }
+    }
+
+    function openCreateModal() { if (modalCreate) modalCreate.classList.remove('hidden'); }
+    function closeCreateModal() { if (modalCreate) modalCreate.classList.add('hidden'); }
+    function openDeleteModal(id, name) { deleteTarget = { id, name }; deleteName.textContent = name; modalDelete.classList.remove('hidden'); }
+    function closeDeleteModal() { deleteTarget = null; modalDelete.classList.add('hidden'); }
+
+    async function handleCreateSubmit(e) {
+      e.preventDefault();
+      const formData = new FormData(createForm);
+      if (!formData.get('is_featured')) formData.set('is_featured', '');
+      try {
+        const res = await fetch(CREATE_ENDPOINT, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() }, body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Create failed');
+        closeCreateModal();
+        if (window.showToast) showToast('Sukses', 'Produk berhasil ditambahkan.', 'success');
+        await fetchProducts();
+      } catch (err) {
+        console.error(err);
+        if (window.showToast) showToast('Gagal', 'Tidak dapat menambahkan produk.', 'error');
+      }
+    }
+
+    async function handleConfirmDelete() {
+      if (!deleteTarget) return;
+      const url = DELETE_ENDPOINT_TMPL.replace('00000000-0000-0000-0000-000000000000', deleteTarget.id);
+      try {
+        const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() } });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Delete failed');
+        closeDeleteModal();
+        if (window.showToast) showToast('Terhapus', 'Produk berhasil dihapus.', 'success');
+        await fetchProducts();
+      } catch (err) {
+        console.error(err);
+        if (window.showToast) showToast('Gagal', 'Tidak dapat menghapus produk.', 'error');
+      }
+    }
+
+    function init() {
+      const filterAllBtn = document.getElementById('filter-all');
+      const filterMyBtn = document.getElementById('filter-my');
+      filterAllBtn && filterAllBtn.addEventListener('click', () => { activeFilter = 'all'; filterAndDisplay(); });
+      filterMyBtn && filterMyBtn.addEventListener('click', () => { activeFilter = 'my'; filterAndDisplay(); });
+      refreshBtn && refreshBtn.addEventListener('click', fetchProducts);
+      openCreateBtn && openCreateBtn.addEventListener('click', openCreateModal);
+      emptyOpenCreateBtn && emptyOpenCreateBtn.addEventListener('click', openCreateModal);
+      closeCreate && closeCreate.addEventListener('click', closeCreateModal);
+      cancelCreate && cancelCreate.addEventListener('click', closeCreateModal);
+      createForm && createForm.addEventListener('submit', handleCreateSubmit);
+      closeDelete && closeDelete.addEventListener('click', closeDeleteModal);
+      cancelDelete && cancelDelete.addEventListener('click', closeDeleteModal);
+      confirmDelete && confirmDelete.addEventListener('click', handleConfirmDelete);
+      fetchProducts();
+    }
+    init();
+  </script>
 {% endblock content %}
+

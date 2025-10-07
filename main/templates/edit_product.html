@@ -10,7 +10,7 @@
   <p class="mt-1 text-neutral-600">Perbarui informasi produk vintage Anda.</p>
 
   <div class="mt-6 card p-6">
-    <form method="POST" class="space-y-5">
+    <form id="edit-form-page" method="POST" class="space-y-5">
       {% csrf_token %}
 
       {% if form.non_field_errors %}
@@ -65,4 +65,29 @@
     </form>
   </div>
 </section>
+<script>
+  (function(){
+    const form = document.getElementById('edit-form-page');
+    if (!form) return;
+    function getCSRFToken(){
+      const name='csrftoken='; const parts=(document.cookie||'').split(';');
+      for(let c of parts){ c=c.trim(); if(c.startsWith(name)) return decodeURIComponent(c.substring(name.length)); }
+      return '';
+    }
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const formData = new FormData(form);
+      try{
+        const res = await fetch("{% url 'main:update_product_ajax' product_id %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Update failed');
+        if (window.showToast) showToast('Tersimpan', 'Produk berhasil diperbarui.', 'success');
+        window.location.href = "{% url 'main:show_main' %}";
+      }catch(err){
+        console.error(err);
+        if (window.showToast) showToast('Gagal', 'Tidak dapat menyimpan perubahan.', 'error');
+      }
+    });
+  })();
+</script>
 {% endblock %}

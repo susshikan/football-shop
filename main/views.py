@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from main.forms import ProductForm
 from main.models import Product
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -43,6 +44,34 @@ def create_product(request):
 
     context = {'form': form}
     return render(request, "create_product.html", context)
+
+@login_required(login_url='/login')
+def create_product_ajax(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
+    form = ProductForm(request.POST or None)
+    if form.is_valid():
+        product_entry = form.save(commit=False)
+        product_entry.user = request.user
+        product_entry.save()
+        return JsonResponse({
+            'success': True,
+            'product': {
+                'id': str(product_entry.id),
+                'name': product_entry.name,
+                'price': product_entry.price,
+                'description': product_entry.description,
+                'thumbnail': product_entry.thumbnail,
+                'category': product_entry.get_category_display(),
+                'category_code': product_entry.category,
+                'history_value': product_entry.get_history_value_display(),
+                'history_value_code': product_entry.history_value,
+                'is_featured': product_entry.is_featured,
+                'user_id': product_entry.user_id,
+            }
+        })
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
@@ -121,7 +150,8 @@ def edit_product(request, id):
         return redirect('main:show_main')
 
     context = {
-        'form': form
+        'form': form,
+        'product_id': product.pk,
     }
 
     return render(request, "edit_product.html", context)
@@ -130,3 +160,42 @@ def delete_product(request, id):
     product = get_object_or_404(Product, pk=id)
     product.delete()
     return HttpResponseRedirect(reverse('main:show_main'))
+
+@login_required(login_url='/login')
+def update_product_ajax(request, id):
+    product = get_object_or_404(Product, pk=id)
+    if product.user_id != request.user.id:
+        return JsonResponse({'success': False, 'error': 'Forbidden'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
+    form = ProductForm(request.POST or None, instance=product)
+    if form.is_valid():
+        updated = form.save()
+        return JsonResponse({
+            'success': True,
+            'product': {
+                'id': str(updated.id),
+                'name': updated.name,
+                'price': updated.price,
+                'description': updated.description,
+                'thumbnail': updated.thumbnail,
+                'category': updated.get_category_display(),
+                'category_code': updated.category,
+                'history_value': updated.get_history_value_display(),
+                'history_value_code': updated.history_value,
+                'is_featured': updated.is_featured,
+                'user_id': updated.user_id,
+            }
+        })
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required(login_url='/login')
+def delete_product_ajax(request, id):
+    product = get_object_or_404(Product, pk=id)
+    if product.user_id != request.user.id:
+        return JsonResponse({'success': False, 'error': 'Forbidden'}, status=403)
+    if request.method not in ['POST', 'DELETE']:
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    product.delete()
+    return JsonResponse({'success': True})

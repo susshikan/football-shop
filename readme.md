@@ -404,3 +404,35 @@ def delete_product(request, id):
     ```
 - Melakukan styling pada seluruh template html
 </details>
+
+<details>
+    <summary><h2>Tugas Individu 6</h2></summary>
+
+## Apa perbedaan antara synchronous request dan asynchronous request?
+Perbedaan antara synchronous dan asynchronous request terletak pada cara JavaScript mengeksekusi prosesnya. Pada synchronous request, program akan menunggu satu tugas selesai terlebih dahulu sebelum melanjutkan ke baris berikutnya, sehingga dapat menyebabkan aplikasi terhenti sementara (blocking) jika prosesnya lama. Sebaliknya, pada asynchronous request, program tidak menunggu hasil dari tugas tersebut; JavaScript akan melanjutkan eksekusi kode lain sambil menunggu hasil proses di latar belakang, dan ketika hasilnya siap, barulah fungsi callback atau promise dijalankan. Pendekatan asynchronous ini membuat aplikasi tetap responsif dan cepat, terutama saat menangani operasi jaringan seperti memanggil API.
+- Sycnronous
+    ```javascript
+    function getDataSync() {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "https://jsonplaceholder.typicode.com/posts/1", false); 
+        xhr.send(); 
+        console.log(xhr.responseText);
+    }
+    ```
+- Asynchronous
+    ```javascript
+    fetch("https://jsonplaceholder.typicode.com/posts/1")
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(err => console.error(err));
+    ```
+## Bagaimana AJAX bekerja di Django (alur request–response)?
+Dalam konteks Django, AJAX (Asynchronous JavaScript and XML) bekerja dengan cara memungkinkan browser mengirim dan menerima data dari server tanpa me-refresh halaman secara penuh. Alur kerjanya adalah: ketika pengguna melakukan aksi di halaman (misalnya klik tombol), JavaScript akan membuat request asinkron (biasanya dengan fetch() atau **$.ajax()**) ke URL Django tertentu (misalnya ke view bernama **/get-data/**). Django kemudian menerima request ini seperti request biasa, memprosesnya di views.py (misalnya mengambil data dari database), lalu mengembalikan response dalam format JSON. JavaScript di sisi klien akan menerima data JSON itu, dan menggunakan hasilnya untuk memperbarui bagian tertentu dari halaman (DOM) tanpa melakukan reload seluruh halaman. Dengan cara ini, interaksi pengguna terasa lebih cepat dan dinamis, karena hanya sebagian kecil halaman yang diperbarui.
+## Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+- Tidak perlu reload seluruh halaman
+- Respons lebih cepat dan hemat bandwidth
+- Pengalaman pengguna (UX) lebih interaktif
+- Pemisahan logika data dan tampilan
+## Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+## Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+</details>

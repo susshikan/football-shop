@@ -10,7 +10,7 @@
   <p class="mt-1 text-neutral-600">Lengkapi detail berikut untuk menambahkan merchandise vintage Anda.</p>
 
   <div class="mt-6 card p-6">
-    <form method="POST" class="space-y-5">
+    <form id="create-form-page" method="POST" class="space-y-5">
       {% csrf_token %}
       {% if form.non_field_errors %}
         <ul class="errorlist">{{ form.non_field_errors }}</ul>
@@ -64,4 +64,29 @@
     </form>
   </div>
 </section>
+<script>
+  (function(){
+    const form = document.getElementById('create-form-page');
+    if (!form) return;
+    function getCSRFToken(){
+      const name='csrftoken='; const parts=(document.cookie||'').split(';');
+      for(let c of parts){ c=c.trim(); if(c.startsWith(name)) return decodeURIComponent(c.substring(name.length)); }
+      return '';
+    }
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const formData = new FormData(form);
+      try{
+        const res = await fetch("{% url 'main:create_product_ajax' %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Create failed');
+        if (window.showToast) showToast('Sukses', 'Produk berhasil ditambahkan.', 'success');
+        window.location.href = "{% url 'main:show_main' %}";
+      }catch(err){
+        console.error(err);
+        if (window.showToast) showToast('Gagal', 'Tidak dapat menambahkan produk.', 'error');
+      }
+    });
+  })();
+ </script>
 {% endblock %}
