@@ -83,30 +83,60 @@ def show_product(request, id):
     return render(request, "product_detail.html", context)
 
 def show_xml(request):
-     news_list = Product.objects.all()
-     xml_data = serializers.serialize("xml", news_list)
+     product_list = Product.objects.all()
+     xml_data = serializers.serialize("xml", product_list)
      return HttpResponse(xml_data, content_type="application/xml")
 
 def show_json(request):
-    news_list = Product.objects.all()
-    json_data = serializers.serialize("json", news_list)
-    return HttpResponse(json_data, content_type="application/json")
+    products = Product.objects.select_related('user').all()
+    data = [
+        {
+            'id': str(p.id),
+            'name': p.name,
+            'price': p.price,
+            'description': p.description,
+            'thumbnail': p.thumbnail,
+            'category': p.category,
+            'history_value': p.history_value,
+            'is_featured': p.is_featured,
+            'season': p.season,
+            'exclusive': p.exlusive,
+            'user_id': p.user_id,
+            'user_username': p.user.username if p.user_id else None,
+        }
+        for p in products
+    ]
+
+    return JsonResponse(data, safe=False)
 
 def show_xml_by_id(request, news_id):
    try:
-       news_item = Product.objects.filter(pk=news_id)
-       xml_data = serializers.serialize("xml", news_item)
+       product_item = Product.objects.filter(pk=news_id)
+       xml_data = serializers.serialize("xml", product_item)
        return HttpResponse(xml_data, content_type="application/xml")
    except Product.DoesNotExist:
        return HttpResponse(status=404)
 
 def show_json_by_id(request, news_id):
    try:
-       news_item = Product.objects.get(pk=news_id)
-       json_data = serializers.serialize("json", [news_item])
-       return HttpResponse(json_data, content_type="application/json")
+       p = Product.objects.select_related('user').get(pk=news_id)
+       data = {
+           'id': str(p.id),
+           'name': p.name,
+           'price': p.price,
+           'description': p.description,
+           'thumbnail': p.thumbnail,
+           'category': p.category,
+           'history_value': p.history_value,
+           'is_featured': p.is_featured,
+           'season': p.season,
+           'exclusive': p.exlusive,
+           'user_id': p.user_id,
+           'user_username': p.user.username if p.user_id else None,
+       }
+       return JsonResponse(data)
    except Product.DoesNotExist:
-       return HttpResponse(status=404)
+       return JsonResponse({'detail': 'Not found'}, status=404)
    
 def register(request):
     form = UserCreationForm()

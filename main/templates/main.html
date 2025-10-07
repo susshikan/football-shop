@@ -293,8 +293,8 @@
         const res = await fetch(PRODUCTS_API_ENDPOINT, { headers: { 'Accept': 'application/json' }});
         if (!res.ok) throw new Error('Failed');
         const raw = await res.json();
-        // Convert Django serializer output
-        allProducts = (raw || []).map(obj => ({ id: obj.pk, user_id: obj.fields.user, name: obj.fields.name, price: obj.fields.price, description: obj.fields.description, thumbnail: obj.fields.thumbnail, category: obj.fields.category, history_value: obj.fields.history_value, is_featured: obj.fields.is_featured }));
+        // Expect custom JSON array of products
+        allProducts = (raw || []).map(obj => ({ id: obj.id, user_id: obj.user_id, name: obj.name, price: obj.price, description: obj.description, thumbnail: obj.thumbnail, category: obj.category, history_value: obj.history_value, is_featured: obj.is_featured }));
         // Map code to labels (rough map for display)
         const catMap = { 'match_worn_vintage':'Match Worn Vintage','player_issue_vintage':'Player Issue Vintage','replica_vintage':'Replica Vintage','reissue_retro':'Reissue Retro','special_edition_vintage':'Special Edition Vintage','analysis':'Analysis' };
         const histMap = { 'classic':'Classic','signed_vintage':'Signed Vintage','limited_edition':'Limited Edition','historical_matches':'Historical Matches' };
@@ -363,4 +363,3 @@
     init();
   </script>
 {% endblock content %}
-

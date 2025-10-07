@@ -2,60 +2,144 @@
 {% load static %}
 
 {% block meta %}
-  <title>{{ product.name }} — Vintage Sports</title>
+  <title>Detail Produk — Vintage Sports</title>
 {% endblock meta %}
 
 {% block content %}
-  <a href="{% url 'main:show_main' %}" class="inline-flex items-center text-sm text-neutral-600 hover:text-ink">← Kembali ke daftar</a>
+  <div class="mb-6">
+    <a href="{% url 'main:show_main' %}" class="text-neutral-600 hover:text-ink font-medium transition-colors">← Kembali ke daftar</a>
+  </div>
 
-  <section class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- Loading State -->
+  <div id="loading-state" class="bg-white rounded-lg border border-neutral-200/60 p-12 text-center">
+    <svg class="animate-spin h-8 w-8 text-ink inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-neutral-600 mt-3">Memuat detail produk...</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="error-state" class="bg-white rounded-lg border border-neutral-200/60 p-12 text-center hidden">
+    <div class="text-burgundy text-5xl">⚠️</div>
+    <h3 class="text-lg font-medium text-ink mt-3">Gagal memuat produk</h3>
+    <p class="text-neutral-500">Silakan coba lagi nanti.</p>
+  </div>
+
+  <!-- Content -->
+  <section id="product-content" class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
     <div class="overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft">
       <div class="relative aspect-[4/3] bg-neutral-100">
-        {% if product.thumbnail %}
-          <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="h-full w-full object-cover" />
-        {% else %}
-          <img src="{% static 'image/no-news.png' %}" alt="no thumbnail" class="h-full w-full object-contain p-6" />
-        {% endif %}
-        {% if product.is_featured %}
-          <span class="absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1">Featured</span>
-        {% endif %}
+        <img id="product-image" src="" alt="" class="h-full w-full object-cover hidden" />
+        <img id="product-image-fallback" src="{% static 'image/no-news.png' %}" alt="no thumbnail" class="h-full w-full object-contain p-6" />
+        <span id="badge-featured" class="hidden absolute top-3 left-3 rounded-full bg-gold/90 text-white text-xs tracking-wide px-2 py-1">Featured</span>
       </div>
     </div>
 
     <div>
-      <div class="flex items-center gap-2 text-xs text-neutral-500">
-        <span class="uppercase tracking-wide">{{ product.get_category_display }}</span>
-        <span class="select-none">•</span>
-        <span>{{ product.get_history_value_display }}</span>
-        {% if product.season %}<span class="select-none">•</span><span>{{ product.season }}</span>{% endif %}
+      <div class="flex items-center flex-wrap gap-2 text-xs text-neutral-500">
+        <span id="product-category" class="uppercase tracking-wide"></span>
+        <span id="dot-1" class="select-none hidden">•</span>
+        <span id="product-history"></span>
+        <span id="dot-2" class="select-none hidden">•</span>
+        <span id="product-season"></span>
       </div>
-      <h1 class="mt-2 font-display text-3xl text-ink">{{ product.name }}</h1>
-      <div class="mt-2 text-2xl font-semibold text-ink">Rp {{ product.price }}</div>
+      <h1 id="product-name" class="mt-2 font-display text-3xl text-ink"></h1>
+      <div id="product-price" class="mt-2 text-2xl font-semibold text-ink"></div>
 
       <div class="mt-4 prose prose-sm max-w-none text-neutral-700">
-        <p>{{ product.description }}</p>
+        <p id="product-description"></p>
       </div>
 
       <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
         <div class="rounded-lg border border-neutral-200/60 bg-white px-4 py-3">100% Authenticity Guarantee</div>
-    
       </div>
 
       <div class="mt-6 flex items-center gap-2 text-sm text-neutral-600">
-        {% if product.user %}
-          <span>Penjual:</span> <span class="font-medium text-ink">{{ product.user.username }}</span>
-        {% else %}
-          <span>Penjual:</span> <span class="font-medium text-ink">Anonim</span>
-        {% endif %}
+        <span>Penjual:</span> <span id="product-seller" class="font-medium text-ink"></span>
       </div>
-
-      {% if user.is_authenticated and product.user == user %}
-      <div class="mt-6 flex items-center gap-3">
-        <a href="{% url 'main:edit_product' product.pk %}" class="inline-flex items-center rounded-md border border-neutral-300 px-4 py-2 text-sm text-ink hover:border-gold hover:text-gold transition">Edit</a>
-        <a href="{% url 'main:delete_product' product.pk %}" class="inline-flex items-center rounded-md border border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">Delete</a>
-      </div>
-      {% endif %}
     </div>
   </section>
+
+  <script>
+    const PRODUCT_ID = "{{ product.id }}";
+    const DETAIL_ENDPOINT = "{% url 'main:show_json_by_id' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', PRODUCT_ID);
+
+    const loadingEl = document.getElementById('loading-state');
+    const errorEl = document.getElementById('error-state');
+    const contentEl = document.getElementById('product-content');
+    const imgEl = document.getElementById('product-image');
+    const imgFallbackEl = document.getElementById('product-image-fallback');
+    const badgeFeatured = document.getElementById('badge-featured');
+
+    const catEl = document.getElementById('product-category');
+    const histEl = document.getElementById('product-history');
+    const seasonEl = document.getElementById('product-season');
+    const dot1 = document.getElementById('dot-1');
+    const dot2 = document.getElementById('dot-2');
+    const nameEl = document.getElementById('product-name');
+    const priceEl = document.getElementById('product-price');
+    const descEl = document.getElementById('product-description');
+    const sellerEl = document.getElementById('product-seller');
+
+    function showState(state){
+      loadingEl.classList.toggle('hidden', state !== 'loading');
+      errorEl.classList.toggle('hidden', state !== 'error');
+      contentEl.classList.toggle('hidden', state !== 'ready');
+    }
+
+    function mapCategory(code){
+      const m = { 'match_worn_vintage':'Match Worn Vintage','player_issue_vintage':'Player Issue Vintage','replica_vintage':'Replica Vintage','reissue_retro':'Reissue Retro','special_edition_vintage':'Special Edition Vintage','analysis':'Analysis' };
+      return m[code] || code || '';
+    }
+    function mapHistory(code){
+      const m = { 'classic':'Classic','signed_vintage':'Signed Vintage','limited_edition':'Limited Edition','historical_matches':'Historical Matches' };
+      return m[code] || code || '';
+    }
+
+    function renderProduct(p){
+      document.title = `${p.name} — Vintage Sports`;
+      nameEl.textContent = p.name || '';
+      priceEl.textContent = p.price != null ? `Rp ${p.price}` : '';
+      descEl.textContent = p.description || '';
+      sellerEl.textContent = p.user_username || 'Anonim';
+
+      const catLabel = mapCategory(p.category);
+      const histLabel = mapHistory(p.history_value);
+      catEl.textContent = catLabel;
+      histEl.textContent = histLabel;
+      seasonEl.textContent = p.season || '';
+      dot1.classList.toggle('hidden', !(catLabel && histLabel));
+      dot2.classList.toggle('hidden', !(p.season && (catLabel || histLabel)));
+
+      if (p.thumbnail) {
+        imgEl.src = p.thumbnail;
+        imgEl.alt = p.name || 'product';
+        imgEl.classList.remove('hidden');
+        imgFallbackEl.classList.add('hidden');
+      } else {
+        imgEl.classList.add('hidden');
+        imgFallbackEl.classList.remove('hidden');
+      }
+
+      badgeFeatured.classList.toggle('hidden', !p.is_featured);
+    }
+
+    async function loadDetail(){
+      try{
+        showState('loading');
+        const res = await fetch(DETAIL_ENDPOINT, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        renderProduct(data);
+        showState('ready');
+      }catch(err){
+        console.error(err);
+        showState('error');
+      }
+    }
+
+    loadDetail();
+  </script>
 {% endblock content %}
 
