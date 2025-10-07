@@ -110,6 +110,69 @@
   </div>
   {% endif %}
 
+  {% if user.is_authenticated %}
+  <!-- Edit Modal -->
+  <div id="modal-edit" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="absolute inset-0 flex items-center justify-center px-4">
+      <div class="w-full max-w-lg bg-white rounded-xl border border-neutral-200/60 shadow-soft overflow-hidden">
+        <div class="px-5 py-4 border-b border-neutral-200/60 flex items-center justify-between">
+          <h3 class="font-semibold text-ink">Edit Produk</h3>
+          <button id="close-edit" class="p-1 text-neutral-400 hover:text-ink">✕</button>
+        </div>
+        <div class="p-5">
+          <form id="edit-form" class="space-y-4">
+            <div>
+              <label class="font-medium text-sm">Nama</label>
+              <input name="name" type="text" class="w-full" required />
+            </div>
+            <div>
+              <label class="font-medium text-sm">Harga</label>
+              <input name="price" type="number" class="w-full" required />
+            </div>
+            <div>
+              <label class="font-medium text-sm">Deskripsi</label>
+              <textarea name="description" rows="3" class="w-full" required></textarea>
+            </div>
+            <div>
+              <label class="font-medium text-sm">Thumbnail URL</label>
+              <input name="thumbnail" type="url" class="w-full" required />
+            </div>
+            <div>
+              <label class="font-medium text-sm">Kategori</label>
+              <select name="category" class="w-full">
+                <option value="match_worn_vintage">Match Worn Vintage</option>
+                <option value="player_issue_vintage">Player Issue Vintage</option>
+                <option value="replica_vintage">Replica Vintage</option>
+                <option value="reissue_retro">Reissue Retro</option>
+                <option value="special_edition_vintage">Special Edition Vintage</option>
+                <option value="analysis">Analysis</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-medium text-sm">Nilai Historis</label>
+              <select name="history_value" class="w-full">
+                <option value="classic">Classic</option>
+                <option value="signed_vintage">Signed Vintage</option>
+                <option value="limited_edition">Limited Edition</option>
+                <option value="historical_matches">Historical Matches</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="edit_is_featured" name="is_featured" type="checkbox" />
+              <label for="edit_is_featured" class="text-sm">Featured</label>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button type="button" id="cancel-edit" class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Batal</button>
+              <button type="submit" class="inline-flex items-center rounded-md bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Delete Confirm Modal -->
   <div id="modal-delete" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/30"></div>
@@ -155,6 +218,10 @@
     const createForm = document.getElementById('create-form');
 
     const modalDelete = document.getElementById('modal-delete');
+    const modalEdit = document.getElementById('modal-edit');
+    const closeEdit = document.getElementById('close-edit');
+    const cancelEdit = document.getElementById('cancel-edit');
+    const editForm = document.getElementById('edit-form');
     const closeDelete = document.getElementById('close-delete');
     const cancelDelete = document.getElementById('cancel-delete');
     const confirmDelete = document.getElementById('confirm-delete');
@@ -162,7 +229,8 @@
 
     let allProducts = [];
     let activeFilter = 'all';
-    let deleteTarget = null; // { id, name }
+    let deleteTarget = null; 
+    let currentEdit = null; 
 
     function getCSRFToken() {
       const name = 'csrftoken=';
@@ -198,7 +266,6 @@
       article.className = 'group relative overflow-hidden rounded-xl bg-white border border-neutral-200/60 shadow-soft hover:shadow-lg transition flex flex-col';
 
       const linkDetail = DETAIL_LINK_TMPL.replace('00000000-0000-0000-0000-000000000000', item.id);
-      const linkEdit = EDIT_LINK_TMPL.replace('00000000-0000-0000-0000-000000000000', item.id);
 
       const thumbWrap = document.createElement('div');
       thumbWrap.className = 'relative aspect-[4/3] bg-neutral-100 overflow-hidden';
@@ -227,6 +294,8 @@
       const meta = document.createElement('div');
       meta.className = 'flex items-center gap-2 text-xs text-neutral-500';
       meta.innerHTML = `<span class="uppercase tracking-wide">${item.category}</span>` + (item.history_value ? ` <span class="select-none">•</span> <span>${item.history_value}</span>` : '');
+
+      meta.innerHTML = `<span class="uppercase tracking-wide">${item.category_label}</span>` + (item.history_value_label ? ` <span class="select-none">&bull;</span> <span>${item.history_value_label}</span>` : '');
       const title = document.createElement('h3');
       title.className = 'mt-2 font-display text-lg text-ink';
       title.textContent = item.name;
@@ -254,10 +323,11 @@
       if (CURRENT_USER_ID && String(item.user_id) === String(CURRENT_USER_ID)) {
         const actions = document.createElement('div');
         actions.className = 'px-4 pb-4 flex items-center gap-2';
-        const editA = document.createElement('a');
-        editA.href = linkEdit;
+        const editA = document.createElement('button');
+        editA.type = 'button';
         editA.className = 'inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition';
         editA.textContent = 'Edit';
+        editA.addEventListener('click', () => openEditModal(item));
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'inline-flex items-center rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 transition';
@@ -292,12 +362,22 @@
         const res = await fetch(PRODUCTS_API_ENDPOINT, { headers: { 'Accept': 'application/json' }});
         if (!res.ok) throw new Error('Failed');
         const raw = await res.json();
-        // Expect custom JSON array of products
-        allProducts = (raw || []).map(obj => ({ id: obj.id, user_id: obj.user_id, name: obj.name, price: obj.price, description: obj.description, thumbnail: obj.thumbnail, category: obj.category, history_value: obj.history_value, is_featured: obj.is_featured }));
-        // Map code to labels (rough map for display)
+      
         const catMap = { 'match_worn_vintage':'Match Worn Vintage','player_issue_vintage':'Player Issue Vintage','replica_vintage':'Replica Vintage','reissue_retro':'Reissue Retro','special_edition_vintage':'Special Edition Vintage','analysis':'Analysis' };
         const histMap = { 'classic':'Classic','signed_vintage':'Signed Vintage','limited_edition':'Limited Edition','historical_matches':'Historical Matches' };
-        allProducts = allProducts.map(p => ({...p, category: catMap[p.category] || p.category, history_value: histMap[p.history_value] || p.history_value }));
+        allProducts = (raw || []).map(obj => ({
+          id: obj.id,
+          user_id: obj.user_id,
+          name: obj.name,
+          price: obj.price,
+          description: obj.description,
+          thumbnail: obj.thumbnail,
+          category: obj.category, 
+          history_value: obj.history_value, 
+          category_label: catMap[obj.category] || obj.category,
+          history_value_label: histMap[obj.history_value] || obj.history_value,
+          is_featured: obj.is_featured
+        }));
         filterAndDisplay();
       } catch (e) {
         console.error(e);
@@ -309,6 +389,19 @@
     function closeCreateModal() { if (modalCreate) modalCreate.classList.add('hidden'); }
     function openDeleteModal(id, name) { deleteTarget = { id, name }; deleteName.textContent = name; modalDelete.classList.remove('hidden'); }
     function closeDeleteModal() { deleteTarget = null; modalDelete.classList.add('hidden'); }
+    function openEditModal(item) {
+      currentEdit = item;
+      if (!modalEdit || !editForm) return;
+      editForm.name.value = item.name || '';
+      editForm.price.value = item.price != null ? item.price : '';
+      editForm.description.value = item.description || '';
+      editForm.thumbnail.value = item.thumbnail || '';
+      editForm.category.value = item.category || 'match_worn_vintage';
+      editForm.history_value.value = item.history_value || 'classic';
+      editForm.is_featured.checked = !!item.is_featured;
+      modalEdit.classList.remove('hidden');
+    }
+    function closeEditModal() { currentEdit = null; if (modalEdit) modalEdit.classList.add('hidden'); }
 
     async function handleCreateSubmit(e) {
       e.preventDefault();
@@ -324,6 +417,24 @@
       } catch (err) {
         console.error(err);
         if (window.showToast) showToast('Gagal', 'Tidak dapat menambahkan produk.', 'error');
+      }
+    }
+    async function handleEditSubmit(e) {
+      e.preventDefault();
+      if (!currentEdit) return;
+      const formData = new FormData(editForm);
+      if (!formData.get('is_featured')) formData.set('is_featured', '');
+      const url = UPDATE_ENDPOINT_TMPL.replace('00000000-0000-0000-0000-000000000000', currentEdit.id);
+      try {
+        const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': getCSRFToken() }, body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Update failed');
+        closeEditModal();
+        if (window.showToast) showToast('Tersimpan', 'Produk berhasil diperbarui.', 'success');
+        await fetchProducts();
+      } catch (err) {
+        console.error(err);
+        if (window.showToast) showToast('Gagal', 'Tidak dapat menyimpan perubahan.', 'error');
       }
     }
 
@@ -348,7 +459,6 @@
       const filterMyBtn = document.getElementById('filter-my');
       filterAllBtn && filterAllBtn.addEventListener('click', () => { activeFilter = 'all'; filterAndDisplay(); });
       filterMyBtn && filterMyBtn.addEventListener('click', () => { activeFilter = 'my'; filterAndDisplay(); });
-      // Refresh button moved to navbar; handler attached there
       openCreateBtn && openCreateBtn.addEventListener('click', openCreateModal);
       emptyOpenCreateBtn && emptyOpenCreateBtn.addEventListener('click', openCreateModal);
       closeCreate && closeCreate.addEventListener('click', closeCreateModal);
@@ -357,6 +467,10 @@
       closeDelete && closeDelete.addEventListener('click', closeDeleteModal);
       cancelDelete && cancelDelete.addEventListener('click', closeDeleteModal);
       confirmDelete && confirmDelete.addEventListener('click', handleConfirmDelete);
+      // Edit modal bindings
+      closeEdit && closeEdit.addEventListener('click', closeEditModal);
+      cancelEdit && cancelEdit.addEventListener('click', closeEditModal);
+      editForm && editForm.addEventListener('submit', handleEditSubmit);
       fetchProducts();
     }
     init();
