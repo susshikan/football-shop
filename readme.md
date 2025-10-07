@@ -427,6 +427,7 @@ Perbedaan antara synchronous dan asynchronous request terletak pada cara JavaScr
     .catch(err => console.error(err));
     ```
 ## Bagaimana AJAX bekerja di Django (alur request–response)?
+![AJAX](assets/AJAX.png)
 Dalam konteks Django, AJAX (Asynchronous JavaScript and XML) bekerja dengan cara memungkinkan browser mengirim dan menerima data dari server tanpa me-refresh halaman secara penuh. Alur kerjanya adalah: ketika pengguna melakukan aksi di halaman (misalnya klik tombol), JavaScript akan membuat request asinkron (biasanya dengan fetch() atau **$.ajax()**) ke URL Django tertentu (misalnya ke view bernama **/get-data/**). Django kemudian menerima request ini seperti request biasa, memprosesnya di views.py (misalnya mengambil data dari database), lalu mengembalikan response dalam format JSON. JavaScript di sisi klien akan menerima data JSON itu, dan menggunakan hasilnya untuk memperbarui bagian tertentu dari halaman (DOM) tanpa melakukan reload seluruh halaman. Dengan cara ini, interaksi pengguna terasa lebih cepat dan dinamis, karena hanya sebagian kecil halaman yang diperbarui.
 ## Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
 - Tidak perlu reload seluruh halaman

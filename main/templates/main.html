@@ -17,9 +17,8 @@
           <button id="filter-all" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Semua Produk</button>
           <button id="filter-my" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Produk Saya</button>
           {% if user.is_authenticated %}
-          <button id="open-create-modal" class="inline-flex items-center rounded-full bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">+ Tambah (AJAX)</button>
+          <button id="open-create-modal" class="inline-flex items-center rounded-full bg-ink text-white px-4 py-1.5 text-sm hover:bg-gold transition">+ Tambah Produk</button>
           {% endif %}
-          <button id="refresh-button" class="inline-flex items-center rounded-full border px-3 py-1.5 text-sm border-neutral-300 text-neutral-700 hover:border-gold hover:text-gold transition">Refresh</button>
         </div>
       </div>
     </div>
@@ -146,7 +145,7 @@
     const gridEl = document.getElementById('grid');
     const filterAllBtn = document.getElementById('filter-all');
     const filterMyBtn = document.getElementById('filter-my');
-    const refreshBtn = document.getElementById('refresh-button');
+    const refreshBtn = null; // moved to navbar
     const openCreateBtn = document.getElementById('open-create-modal');
     const emptyOpenCreateBtn = document.getElementById('empty-open-create');
 
@@ -349,7 +348,7 @@
       const filterMyBtn = document.getElementById('filter-my');
       filterAllBtn && filterAllBtn.addEventListener('click', () => { activeFilter = 'all'; filterAndDisplay(); });
       filterMyBtn && filterMyBtn.addEventListener('click', () => { activeFilter = 'my'; filterAndDisplay(); });
-      refreshBtn && refreshBtn.addEventListener('click', fetchProducts);
+      // Refresh button moved to navbar; handler attached there
       openCreateBtn && openCreateBtn.addEventListener('click', openCreateModal);
       emptyOpenCreateBtn && emptyOpenCreateBtn.addEventListener('click', openCreateModal);
       closeCreate && closeCreate.addEventListener('click', closeCreateModal);

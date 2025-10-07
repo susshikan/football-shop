@@ -9,6 +9,7 @@
       <!-- Desktop navigation links -->
       <div class="hidden md:flex items-center gap-6 text-sm">
         <a href="/" class="text-neutral-700 hover:text-ink">Home</a>
+        <a href="#" id="refresh-nav" class="text-neutral-700 hover:text-ink">Refresh</a>
         {% if user.is_authenticated %}
           <a href="{% url 'main:create_product' %}"
              class="text-neutral-700 hover:text-ink">Tambah Produk</a>
@@ -52,6 +53,7 @@
       <!-- Mobile Navigation Links -->
       <div class="space-y-1">
         <a href="/" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Home</a>
+        <a id="refresh-nav-mobile" href="#" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Refresh</a>
         {% if user.is_authenticated %}
           <a href="{% url 'main:create_product' %}" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Tambah Produk</a>
         {% endif %}
@@ -113,8 +115,23 @@
           }
         });
       }
+      function attachRefresh(id){
+        const link = document.getElementById(id);
+        if (!link) return;
+        link.addEventListener('click', function(e){
+          e.preventDefault();
+          if (typeof window.fetchProducts === 'function') {
+            window.fetchProducts();
+            if (window.showToast) showToast('Refreshed', 'Daftar produk diperbarui.', 'success');
+          } else {
+            window.location.href = "{% url 'main:show_main' %}";
+          }
+        });
+      }
       attachLogout('logout-link');
       attachLogout('logout-link-mobile');
+      attachRefresh('refresh-nav');
+      attachRefresh('refresh-nav-mobile');
     })();
   </script>
 </nav>
