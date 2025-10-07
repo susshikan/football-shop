@@ -68,7 +68,7 @@
           if (window.showToast) showToast('Gagal Login', 'Periksa kembali username atau password.', 'error');
           return;
         }
-        if (window.showToast) showToast('Selamat datang', 'Login berhasil.', 'success');
+        try { sessionStorage.setItem('TOAST_FLASH', JSON.stringify({ title: 'Selamat datang', message: 'Login berhasil.', type: 'success', duration: 3000 })); } catch(e) {}
         window.location.href = data.redirect || "{% url 'main:show_main' %}";
       }catch(err){
         console.error(err);
@@ -78,4 +78,3 @@
   })();
 </script>
 {% endblock content %}
-

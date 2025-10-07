@@ -47,5 +47,27 @@
     {% block content %}{% endblock content %}
   </main>
   <script src="{% static 'js/toast.js' %}"></script>
+  <script>
+    (function(){
+  
+      window.queueToast = function(title, message, type = 'info', duration = 3000){
+        try { sessionStorage.setItem('TOAST_FLASH', JSON.stringify({ title, message, type, duration })); } catch(e) {}
+      }
+      window.queueToastAndRedirect = function(url, title, message, type = 'info', duration = 3000){
+        window.queueToast(title, message, type, duration);
+        window.location.href = url;
+      }
+      try {
+        const raw = sessionStorage.getItem('TOAST_FLASH');
+        if (raw) {
+          sessionStorage.removeItem('TOAST_FLASH');
+          const data = JSON.parse(raw);
+          if (data && window.showToast) {
+            showToast(data.title || '', data.message || '', data.type || 'info', data.duration || 3000);
+          }
+        }
+      } catch(e) { /* ignore */ }
+    })();
+  </script>
 </body>
 </html>

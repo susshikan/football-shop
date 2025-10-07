@@ -81,7 +81,7 @@
         const res = await fetch("{% url 'main:update_product_ajax' product_id %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body: formData });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error('Update failed');
-        if (window.showToast) showToast('Tersimpan', 'Produk berhasil diperbarui.', 'success');
+        if (window.queueToast) { queueToast('Tersimpan', 'Produk berhasil diperbarui.', 'success'); }
         window.location.href = "{% url 'main:show_main' %}";
       }catch(err){
         console.error(err);

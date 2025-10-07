@@ -103,15 +103,15 @@
             const res = await fetch("{% url 'main:logout_ajax' %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() } });
             const data = await res.json();
             if (res.ok && data.success) {
-              if (window.showToast) showToast('Logout', 'Anda telah keluar.', 'success');
+              try { sessionStorage.setItem('TOAST_FLASH', JSON.stringify({ title: 'Logout', message: 'Anda telah keluar.', type: 'success', duration: 3000 })); } catch(e) {}
               window.location.href = data.redirect || "{% url 'main:login' %}";
             } else {
               if (window.showToast) showToast('Gagal', 'Tidak dapat logout.', 'error');
-              window.location.href = link.href; // fallback
+              window.location.href = link.href; 
             }
           } catch(err){
             if (window.showToast) showToast('Error', 'Terjadi kesalahan saat logout.', 'error');
-            window.location.href = link.href; // fallback
+            window.location.href = link.href; 
           }
         });
       }

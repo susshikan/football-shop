@@ -80,7 +80,7 @@
         const res = await fetch("{% url 'main:create_product_ajax' %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body: formData });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error('Create failed');
-        if (window.showToast) showToast('Sukses', 'Produk berhasil ditambahkan.', 'success');
+        if (window.queueToast) { queueToast('Sukses', 'Produk berhasil ditambahkan.', 'success'); }
         window.location.href = "{% url 'main:show_main' %}";
       }catch(err){
         console.error(err);

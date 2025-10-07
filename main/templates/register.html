@@ -69,7 +69,7 @@
           if (window.showToast) showToast('Gagal Daftar', 'Periksa kembali data yang dimasukkan.', 'error');
           return;
         }
-        if (window.showToast) showToast('Berhasil', 'Akun berhasil dibuat. Silakan login.', 'success');
+        try { sessionStorage.setItem('TOAST_FLASH', JSON.stringify({ title: 'Berhasil', message: 'Akun berhasil dibuat. Silakan login.', type: 'success', duration: 3000 })); } catch(e) {}
         window.location.href = data.redirect || "{% url 'main:login' %}";
       }catch(err){
         console.error(err);
@@ -79,4 +79,3 @@
   })();
 </script>
 {% endblock content %}
-
