@@ -434,5 +434,6 @@ Dalam konteks Django, AJAX (Asynchronous JavaScript and XML) bekerja dengan cara
 - Pengalaman pengguna (UX) lebih interaktif
 - Pemisahan logika data dan tampilan
 ## Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+- Menggunakan HTTPS untuk mencegah man-in-the-middle attack
 ## Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
 </details>

@@ -22,7 +22,7 @@
             <span class="text-sm text-ink">Hi, {{ user.username }}</span>
             <span class="text-[11px] text-neutral-500">{{ npm|default:"" }} {{ class|default:"" }}</span>
           </div>
-          <a href="{% url 'main:logout' %}"
+          <a id="logout-link" href="{% url 'main:logout' %}"
              class="inline-flex items-center rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-ink hover:border-gold hover:text-gold transition">Logout</a>
         {% else %}
           <a href="{% url 'main:login' %}"
@@ -64,7 +64,7 @@
             <div class="font-medium text-ink">{{ user.username }}</div>
             <div class="text-sm text-neutral-500">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
           </div>
-          <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">Logout</a>
+          <a id="logout-link-mobile" href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">Logout</a>
         {% else %}
           <div class="space-y-3">
             <a href="{% url 'main:login' %}" class="block text-neutral-700 hover:text-ink font-medium py-3 transition-colors">Login</a>
@@ -83,6 +83,38 @@
       btn.addEventListener('click', function () {
         menu.classList.toggle('hidden');
       });
+    })();
+  </script>
+  <script>
+    (function(){
+      function getCSRFToken(){
+        const name='csrftoken='; const parts=(document.cookie||'').split(';');
+        for(let c of parts){ c=c.trim(); if(c.startsWith(name)) return decodeURIComponent(c.substring(name.length)); }
+        return '';
+      }
+      function attachLogout(id){
+        const link = document.getElementById(id);
+        if (!link) return;
+        link.addEventListener('click', async function(e){
+          e.preventDefault();
+          try{
+            const res = await fetch("{% url 'main:logout_ajax' %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() } });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              if (window.showToast) showToast('Logout', 'Anda telah keluar.', 'success');
+              window.location.href = data.redirect || "{% url 'main:login' %}";
+            } else {
+              if (window.showToast) showToast('Gagal', 'Tidak dapat logout.', 'error');
+              window.location.href = link.href; // fallback
+            }
+          } catch(err){
+            if (window.showToast) showToast('Error', 'Terjadi kesalahan saat logout.', 'error');
+            window.location.href = link.href; // fallback
+          }
+        });
+      }
+      attachLogout('logout-link');
+      attachLogout('logout-link-mobile');
     })();
   </script>
 </nav>

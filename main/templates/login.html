@@ -10,7 +10,7 @@
   <p class="mt-1 text-neutral-600 text-center">Selamat datang kembali.</p>
 
   <div class="mt-6 card p-6">
-    <form method="POST" action="" class="space-y-5">
+    <form id="login-form" method="POST" action="" class="space-y-5">
       {% csrf_token %}
 
       {% if form.non_field_errors %}
@@ -49,5 +49,33 @@
   </div>
 </section>
 
+<script>
+  (function(){
+    const form = document.getElementById('login-form');
+    if (!form) return;
+    function getCSRFToken(){
+      const name='csrftoken='; const parts=(document.cookie||'').split(';');
+      for(let c of parts){ c=c.trim(); if(c.startsWith(name)) return decodeURIComponent(c.substring(name.length)); }
+      return '';
+    }
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const formData = new FormData(form);
+      try{
+        const res = await fetch("{% url 'main:login_ajax' %}", { method:'POST', headers:{ 'X-CSRFToken': getCSRFToken() }, body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          if (window.showToast) showToast('Gagal Login', 'Periksa kembali username atau password.', 'error');
+          return;
+        }
+        if (window.showToast) showToast('Selamat datang', 'Login berhasil.', 'success');
+        window.location.href = data.redirect || "{% url 'main:show_main' %}";
+      }catch(err){
+        console.error(err);
+        if (window.showToast) showToast('Error', 'Terjadi kesalahan saat login.', 'error');
+      }
+    });
+  })();
+</script>
 {% endblock content %}
 

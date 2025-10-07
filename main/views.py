@@ -120,6 +120,15 @@ def register(request):
     context = {'form':form}
     return render(request, 'register.html', context)
 
+def register_ajax(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+        user = form.save()
+        return JsonResponse({'success': True, 'username': user.username, 'redirect': reverse('main:login')})
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
 def login_user(request):
    if request.method == 'POST':
       form = AuthenticationForm(data=request.POST)
@@ -136,11 +145,32 @@ def login_user(request):
    context = {'form': form}
    return render(request, 'login.html', context)
 
+def login_ajax(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        resp = JsonResponse({'success': True, 'redirect': reverse('main:show_main')})
+        resp.set_cookie('last_login', str(datetime.datetime.now()))
+        return resp
+    # flatten non field errors or field errors
+    return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
 def logout_user(request):
     logout(request)
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def logout_ajax(request):
+    if request.method not in ['POST']:
+        return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+    logout(request)
+    resp = JsonResponse({'success': True, 'redirect': reverse('main:login')})
+    resp.delete_cookie('last_login')
+    return resp
 
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
