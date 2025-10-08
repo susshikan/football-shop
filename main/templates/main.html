@@ -274,6 +274,10 @@
         img.src = item.thumbnail
         img.alt = item.name
         img.className = 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]';
+        img.onerror = () => {
+          img.src = '{% static "image/no-news.png" %}';
+          img.className = 'h-full w-full object-contain p-6';
+        };
         thumbWrap.appendChild(img);
       } else {
         const img = document.createElement('img');
